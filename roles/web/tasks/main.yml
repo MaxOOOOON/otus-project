@@ -1,0 +1,105 @@
+---
+- name: Install nginx
+  yum:
+    name: nginx
+    state: latest
+
+
+- name: Copy project
+  copy:
+    src: /vagrant/roles/web/files/mattermost
+    dest: /opt
+    remote_src: true
+
+
+- name: Create a directory /opt/mattermost/data if it does not exist
+  file:
+    path: /opt/mattermost/data
+    state: directory
+    mode: '0755'
+
+- name: Ensure group mattermost exists
+  group:
+    name: mattermost
+    state: present
+
+- name: Add the user mattermost
+  user:
+    name: mattermost
+    group: mattermost
+    append: yes
+
+
+- name: Give insecure permissions to an existing file
+  ansible.builtin.file:
+    path: /opt/mattermost
+    owner: mattermost
+    group: mattermost
+    mode: '0775'
+    recurse: true
+
+- name: Apply new SELinux file context to filesystem
+  ansible.builtin.command: restorecon -R /opt/mattermost
+
+
+- name: Generate config.json
+  template:
+    src: config.json.j2
+    dest: '/opt/mattermost/config/config.json'
+
+
+
+# - name: Generate nginx.conf
+#   template:
+#     src: nginx.conf.j2
+#     dest: '{{ nginx_conf_folder }}/nginx.conf'
+#   # notify: Restart nginx
+
+# - name: Generate default.conf
+#   template:
+#     src: mattermost.conf.j2
+#     dest: '{{ nginx_conf_def_folder }}/mattermost.conf'
+#   # notify: Restart nginx
+
+
+- name: Copy mattermost service
+  copy:
+    src: mattermost.service
+    dest: /etc/systemd/system/mattermost.service
+
+
+- name: Give insecure permissions to an existing file
+  file:
+    path: /etc/systemd/system/mattermost.service
+    mode: '644'
+
+
+- name: Just force systemd to reread configs
+  systemd:
+    daemon_reload: yes
+
+
+- name: Enable service mattermost
+  systemd:
+    name: mattermost
+    enabled: yes
+    masked: no
+
+
+- name: Start mattermost  
+  systemd: 
+    name: mattermost
+    state: started
+
+
+# - name: Enable service nginx
+#   systemd:
+#     name: nginx
+#     enabled: yes
+#     masked: no
+
+
+# - name: Start nginx  
+#   systemd: 
+#     name: nginx
+#     state: started

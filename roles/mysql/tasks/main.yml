@@ -1,0 +1,110 @@
+---
+
+- name: Install percona repository
+  yum: 
+    name: "https://repo.percona.com/yum/percona-release-latest.noarch.rpm"
+    state: present
+#    disable_gpg_check: yes
+
+- name: Enable the repository
+  shell: sudo percona-release setup ps80 -y
+
+
+- name: Install percona Server
+  yum: 
+    name: 
+      - percona-server-server
+      - MySQL-python
+    state: present
+  notify: Restart mysql
+
+- name: Start mysqld 
+  systemd: 
+    name: mysqld
+    state: started
+
+
+- name: Copy mysql configs
+  copy:
+    src:  my.cnf
+    dest: /etc/my.cnf
+    # remote_src: yes 
+ #   directory_mode: yes
+  notify: Restart mysql
+
+- name: Force all notified handlers to run at this point
+  meta: flush_handlers
+
+- name: check if replication user exists
+  command: >
+    mysql
+      -uroot
+      -p'{{ mysql_password }}'
+      -e 'SELECT user FROM mysql.user where user="{{ replication_user }}"'
+  ignore_errors: true
+  register: existed_replication_user
+
+- name: Set temp mysql password
+  shell: grep 'A temporary password is generated' /var/log/mysqld.log | awk '{print $13}' | head -1
+  register: temp_password
+  ignore_errors: true
+  # when: existed_replication_user.stdout == ""
+
+# - name: Set root user password
+#   mysql_user: 
+#     name: root
+#     password: "{{ mysql_password }}"
+#     check_implicit_admin: yes
+#     login_user: "root"
+#     login_password: "{{ mysql_password }}"
+#     state: present
+
+- name: Change mysql password
+  command: mysql --connect-expired-password -uroot -p'{{ temp_password.stdout }}' -e 'ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY "{{ mysql_password }}"'
+  ignore_errors: true
+  # when: existed_replication_user.stdout == ""
+
+
+# - name: Import bet database
+#   mysql_db:
+#     login_user: root
+#     login_password: "{{ mysql_password }}"
+#     name: bet
+#     state: import
+#     target: /vagrant/dump/bet-4560-4974c3.dmp
+
+- name: Create database mmuser user with all database privileges
+  mysql_user:
+    login_user: root
+    login_password: "{{ mysql_password }}"
+    name: "{{login_muser}}"
+    password: "{{password_muser}}"
+    host: '%'
+    priv: '*.*:ALL'
+    state: present
+
+- name: Create database replication user with all database privileges
+  mysql_user:
+    login_user: root
+    login_password: "{{ mysql_password }}"
+    name: "{{ replication_user }}"
+    password: "{{ replication_password }}"
+    host: '%'
+    priv: '*.*:ALL'
+    state: present
+
+
+
+- name: Create a DB
+  mysql_db:
+    login_user: root
+    login_password: "{{ mysql_password }}"
+    name: mattermost
+    state: present
+
+
+- name: Grant access privileges to the user mmuser
+  community.mysql.mysql_query:
+    login_user: root
+    login_password: "{{ mysql_password }}"
+    query: GRANT ALTER, CREATE, DELETE, DROP, INDEX, INSERT, SELECT, UPDATE, REFERENCES ON mattermost.* TO 'mmuser'@'%';

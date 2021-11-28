@@ -1,0 +1,7 @@
+---
+mysql_root_login: "root"
+mysql_password: "qweQWE123$#"
+replication_user: "repl"
+replication_password: "qweQWE123$#"
+login_muser: "mmuser"
+password_muser: "qweQWE123$#"

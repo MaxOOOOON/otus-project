@@ -1,0 +1,81 @@
+---
+- name: Install percona repository
+  yum: 
+    name: "https://repo.percona.com/yum/percona-release-latest.noarch.rpm"
+    state: present
+    disable_gpg_check: yes
+
+
+- name: Enable the repository
+  shell: sudo percona-release setup ps80 -y
+
+
+- name: Install percona Server
+  yum: 
+    name: 
+      - percona-server-server
+      - MySQL-python
+    state: present
+  notify: Restart mysql
+
+
+- name: Copy mysql configs
+  copy:
+    src:  my.cnf
+    dest: /etc/my.cnf
+    # remote_src: yes 
+#    directory_mode: yes
+  notify: Restart mysql
+
+- name: Force all notified handlers to run at this point
+  meta: flush_handlers
+
+
+- name: check if replication user exists
+  command: >
+    mysql
+      -uroot
+      -p'{{ mysql_password }}'
+      -e 'SELECT user FROM mysql.user where user="{{ replication_user }}"'
+  ignore_errors: true
+  register: existed_replication_user
+
+- name: Set temp mysql password
+  shell: grep 'A temporary password is generated' /var/log/mysqld.log | awk '{print $13}' | head -1
+  register: temp_password
+  when: existed_replication_user.stdout == ""
+
+- name: Change mysql password
+  shell:
+    mysql --connect-expired-password -uroot -p'{{ temp_password.stdout }}' -e 'ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY "{{ mysql_password }}"'
+  when: existed_replication_user.stdout == ""
+  ignore_errors: true
+
+
+- name: Check slave replication status.
+  command: >
+    mysql
+      -uroot
+      -p'{{ mysql_password }}'
+      -e 'SHOW REPLICA STATUS\G;'
+  ignore_errors: true
+  register: slave
+
+- name: configure MySQL slave process
+  mysql_replication:
+    master_host: "192.168.255.3"
+    master_user: "{{ replication_user }}"
+    master_password: "{{ replication_password }}"
+    login_user: root
+    login_password: "{{ mysql_password }}"
+    master_auto_position: yes
+    mode: changemaster
+  when:
+    - slave.stdout == "" 
+  
+
+- name: Start slave
+  mysql_replication:
+    login_user: root
+    login_password: "{{ mysql_password }}"
+    mode: startslave

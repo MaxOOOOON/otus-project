@@ -1,0 +1,6 @@
+[Unit]
+Description=Backup etc catalog 
+
+[Service]
+Type=simple
+ExecStart=/opt/backup.sh 

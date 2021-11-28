@@ -1,0 +1,10 @@
+---
+
+nginx_conf_folder: /etc/nginx
+nginx_conf_def_folder: /etc/nginx/conf.d
+
+
+site_url: https://otus-messenger.com
+driver_name: mysql
+database_host_ip: 192.168.255.3
+data_source: "{{login_muser}}:{{password_muser}}@tcp({{database_host_ip}}:3306)/mattermost?charset=utf8mb4,utf8&writeTimeout=30s"

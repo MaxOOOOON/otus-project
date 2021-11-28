@@ -1,0 +1,65 @@
+---
+
+- name: Install epel-release
+  yum:
+    name: epel-release
+
+
+# - name : Enable powertools repository
+#   command: yum config-manager --set-enabled powertools
+
+- name : Enable powertools repository
+  command: yum install dnf
+
+
+- name: Install borgbackup and netcat
+  dnf:
+    name: "{{ item }}"
+    state: present
+  loop: 
+     - borgbackup
+     - netcat
+
+- name: SSH KeyGen command
+  shell: > 
+     ssh-keygen -q -b 2048 -t rsa -N "" -C "creating SSH" -f ~/.ssh/id_rsa
+     creates="~/.ssh/id_rsa"
+
+- name: Fetch the keyfile from one server to another
+  fetch: 
+      src: "~/.ssh/id_rsa.pub"
+      dest: "buffer/client-id_rsa.pub"
+      flat: yes
+
+- name: Copy systemd unit
+  copy:
+    src: files/backup.sh
+    dest: /opt/backup.sh
+    mode: 0744
+
+- name: Copy systemd unit
+  copy:
+    src: files/backup-db.service
+    dest: /usr/lib/systemd/system/
+
+- name: Copy systemd timer
+  copy:
+    src: files/backup-db.timer
+    dest: /usr/lib/systemd/system/
+
+- name: Enable service
+  systemd:
+    name: backup-db
+    enabled: yes
+    masked: no
+
+- name: Start service
+  systemd:
+    state: started
+    name: backup-db
+
+- name: Enable a timer
+  systemd:
+    name: backup-db.timer
+    state: started
+    enabled: yes

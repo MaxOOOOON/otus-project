@@ -1,0 +1,82 @@
+---
+
+- name: Plugin
+  command: yum module enable idm:DL1 -y
+
+# - name: Enable module
+#   yum: 
+#     enable_plugin: idm:DL1
+
+- name: Install ipa-server
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop:
+     - ipa-server
+     - ipa-server-dns
+
+
+- name: firewalld start
+  systemd:
+    name: firewalld
+    state: started
+    enabled: yes
+  
+- name: copy resolv.conf
+  copy: 
+    src: resolv.conf 
+    dest: /etc/resolv.conf 
+
+  
+- name: copy server hosts file
+  copy: 
+    src: hosts 
+    dest: /etc/hosts 
+    owner: root 
+    group: root 
+    mode: 0644
+
+
+- name: Configure freeipa
+  command: |
+      ipa-server-install -U \
+      -r OTUS.LOCAL \
+      -n otus.local \
+      -p PASSWORD \
+      -a PASSWORD \
+      --hostname=ipa-server.otus.local \
+      --ip-address=192.168.255.6 \
+      --mkhomedir \
+      --setup-dns \
+      --auto-forwarders \
+      --auto-reverse
+  ignore_errors: true
+
+- name: Add user
+  ipa_user:
+      name: user
+      givenname: test
+      sn: test
+      password: password
+      sshpubkey: 
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCuwKG1fZxUL5FIblzr3soH7H7CY+v8MYWqVg7/C08jRItm4Mgn+gYp+0yOe+RpAg7NPuEDxAUqLkliM22CTr4FFSdMDSFxt3z4fFlnYwOfTUwm7ctsBK23tlH/XJXQE7Iyuxr6/j1T0Imlx9nC+UbYPq9vDN5fQTgRCZ4hD4PnsfkICdeNUEZi75ORYidTfL8zJmeiJJB3XIEQRlIbtPSvWRzhAn249fxc1wp1HpR3vGrKHM6HXkmyljPude4OgiSPHQr/dnKceRhjQQfx/ILu24NaYohIgT4MEgdLDeOpOmZ/V62PZ/tpEPkltM2u+/KQZHt/qh4KDbRGKL9h1BNxUTrX4QcpddbPE6DPL5e6M5+h013A5Gc/6AMINRuGqkysN5aqZ44ss3SA6tSTXpSR7qlp08fWp+mMigSkKNef9LbqvjIP/377EgsFHKuF/2KTwQFOQMLv8Ug29apES+FNLTe2jMjIXHgNilcdlQvFAbAKhxKDJjGb6KulrnpcWR0= maxim@localhost.localdomain
+      loginshell: /bin/bash
+      ipa_host: ipa-server.otus.local
+      ipa_user: admin
+      ipa_pass: PASSWORD
+
+- name: allow freeipa network activity
+  firewalld:
+      service: "{{ item }}"
+      permanent: yes
+      immediate: yes
+      state: enabled
+  loop:
+      - ntp
+      - http
+      - https
+      - ldap
+      - ldaps
+      - kerberos
+      - kpasswd
+      - dns

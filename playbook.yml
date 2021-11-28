@@ -1,0 +1,36 @@
+---
+- name: Установка mysql
+  hosts: mysql
+  become: yes
+  roles:
+  - mysql
+
+- name: Установка mysql-slave
+  hosts: slave
+  become: yes
+  roles:
+  - mysql-slave
+
+- name: Установка nginx
+  hosts: web
+  become: yes
+  roles:
+  - web
+
+- name: Установка backup-client
+  hosts: slave
+  become: yes
+  roles:
+  - backup-client
+
+- name: Установка backup-server
+  hosts: backup_server
+  become: yes
+  roles:
+  - backup-server
+
+- name: Установка ldap
+  hosts: ldap
+  become: yes
+  roles:
+  - ldap

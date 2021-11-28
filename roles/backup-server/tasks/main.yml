@@ -1,0 +1,43 @@
+---
+
+- name: Install epel-release
+  yum:
+    name: epel-release
+
+
+- name : Enable powertools repository
+  command: yum config-manager --set-enabled powertools
+
+
+- name: Install borgbackup and netcat
+  dnf:
+    name: "{{ item }}"
+    state: present
+  loop: 
+     - borgbackup
+     - netcat
+
+# - name: Create a ext4 filesystem on /dev/sdb
+#   filesystem:
+#     fstype: ext4
+#     dev: /dev/sdb
+
+# - name: Mount backup disk 
+#   mount: 
+#     path: /var/backup
+#     src: /dev/sdb
+#     fstype: ext4
+#     state: mounted
+
+# - name: Set owner /var/backup to ansible
+#   file: 
+#     path: /var/backup
+#     owner: vagrant
+#     group: vagrant
+
+
+- name: Copy the key add to authorized_keys using Ansible module
+  authorized_key:
+      user: root
+      state: present
+      key: "{{ lookup('file','buffer/client-id_rsa.pub')}}"
