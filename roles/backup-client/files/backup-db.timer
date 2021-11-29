@@ -1,10 +1,10 @@
 [Unit]
-Description=Run backup-etc script every 5 minutes
-Requires=backup-etc.service
+Description=Run backup-db script every 5 minutes
+Requires=backup-db.service
 [Timer]
 # Run every 5 minutes
 OnBootSec=1min
-Unit=backup-etc.service
+Unit=backup-db.service
 OnUnitActiveSec=5m
 
 #Specify the accuracy the timer shall elapse with. Defaults to 1min. 

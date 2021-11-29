@@ -1,0 +1,65 @@
+---
+- name: SYSLOG | Place rsyslog.conf
+  template:
+    src: rsyslog.conf.j2
+    dest: /etc/rsyslog.conf
+  tags:
+    - rsyslog
+  notify:
+    - restart rsyslog
+
+- name: AUDISPD | Install audispd-plugins package
+  yum:
+    name: audispd-plugins
+    state: latest
+  tags:
+    - audispd-plugins-package
+    - packages
+
+- name: AUDITD | Place auditd.conf
+  template:
+    src: ../templates/auditd.conf.j2
+    dest: /etc/audit/auditd.conf
+  tags:
+    - auditd
+
+- name: AUDISPD | Place au-remote.conf centos 8
+  template:
+    src: ../templates/au-remote.conf.j2
+    dest: /etc/audit/plugins.d/au-remote.conf
+  when: ansible_facts['distribution_major_version'] == "8"
+  tags:
+    - auditd
+
+
+- name: AUDISPD | Place au-remote.conf centos 7
+  template:
+    src: ../templates/au-remote.conf.j2
+    dest: /etc/audisp/plugins.d/au-remote.conf
+  when: ansible_facts['distribution_major_version'] == "7"
+  tags:
+    - auditd
+
+- name: AUDISPD | Place audisp-remote.conf centos 8
+  template:
+    src: ../templates/audisp-remote.conf.j2
+    dest: /etc/audit/audisp-remote.conf
+  when: ansible_facts['distribution_major_version'] == "8"
+  tags:
+    - auditd
+
+- name: AUDISPD | Place audisp-remote.conf centos 7
+  template:
+    src: ../templates/audisp-remote.conf.j2
+    dest: /etc/audisp/audisp-remote.conf
+  when: ansible_facts['distribution_major_version'] == "7"
+  tags:
+    - auditd
+
+
+# - name: AUDITD | Add rule for watch nginx configs
+#   command: echo "-w /etc/nginx/ -p aw -k nginx_watch" >>/etc/audit/rules.d/audit.rules
+
+# - name: Reboot web
+#   reboot: 
+#     msg : "Reboot initiated by Ansible"

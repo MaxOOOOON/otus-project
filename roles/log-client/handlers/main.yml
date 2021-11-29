@@ -1,0 +1,23 @@
+---
+- name: start nginx
+  systemd:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: restart nginx
+  systemd:
+    name: nginx
+    state: restarted
+    enabled: yes
+
+- name: reload nginx
+  systemd:
+    name: nginx
+    state: reloaded
+
+- name: restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+    enabled: yes

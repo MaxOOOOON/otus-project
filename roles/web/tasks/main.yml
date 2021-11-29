@@ -1,9 +1,17 @@
 ---
-- name: Install nginx
-  yum:
-    name: nginx
-    state: latest
+- name: Nginx module reset
+  shell: yum module reset nginx
 
+
+- name: Nginx module enable nginx:1.20
+  shell: yum module enable nginx:1.20 -y
+
+
+- name: Install software
+  yum:
+    name: [ 'nginx', 'policycoreutils-python-utils']
+    state: latest
+ 
 
 - name: Copy project
   copy:
@@ -18,10 +26,12 @@
     state: directory
     mode: '0755'
 
+
 - name: Ensure group mattermost exists
   group:
     name: mattermost
     state: present
+
 
 - name: Add the user mattermost
   user:
@@ -38,8 +48,28 @@
     mode: '0775'
     recurse: true
 
+
 - name: Apply new SELinux file context to filesystem
-  ansible.builtin.command: restorecon -R /opt/mattermost
+  command: restorecon -R /opt/mattermost
+
+
+- name: Semanage
+  shell: yum provides /usr/sbin/semanage
+
+
+- name: Semanage
+  shell: semanage permissive -a httpd_t
+
+- name: Create a directory /etc/ssl/private if it does not exist
+  file:
+    path: /etc/ssl/private
+    state: directory
+    mode: '0755'
+
+
+- name: Generate certs
+  shell: openssl req -new -x509 -nodes -days 365  -newkey rsa:2048 -keyout /etc/ssl/private/mattermost.key -out /etc/ssl/certs/mattermost.crt  -subj "/C=BY/ST=Minsk/L=Minsk/O=company/CN=otus-messenger.com"
+
 
 
 - name: Generate config.json
@@ -48,18 +78,17 @@
     dest: '/opt/mattermost/config/config.json'
 
 
+- name: Generate nginx.conf
+  template:
+    src: nginx.conf.j2
+    dest: '{{ nginx_conf_folder }}/nginx.conf'
+  # notify: Restart nginx
 
-# - name: Generate nginx.conf
-#   template:
-#     src: nginx.conf.j2
-#     dest: '{{ nginx_conf_folder }}/nginx.conf'
-#   # notify: Restart nginx
-
-# - name: Generate default.conf
-#   template:
-#     src: mattermost.conf.j2
-#     dest: '{{ nginx_conf_def_folder }}/mattermost.conf'
-#   # notify: Restart nginx
+- name: Generate default.conf
+  template:
+    src: mattermost.conf.j2
+    dest: '{{ nginx_conf_def_folder }}/mattermost.conf'
+  # notify: Restart nginx
 
 
 - name: Copy mattermost service
@@ -92,14 +121,14 @@
     state: started
 
 
-# - name: Enable service nginx
-#   systemd:
-#     name: nginx
-#     enabled: yes
-#     masked: no
+- name: Enable service nginx
+  systemd:
+    name: nginx
+    enabled: yes
+    masked: no
 
 
-# - name: Start nginx  
-#   systemd: 
-#     name: nginx
-#     state: started
+- name: Start nginx  
+  systemd: 
+    name: nginx
+    state: started

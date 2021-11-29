@@ -31,3 +31,7 @@ mysql
 use mattermost;
 show tables;
 select * from Users\G;
+
+
+systemctl start backup-db.service
+borg list /var/backup/mysql/

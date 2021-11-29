@@ -1,4 +1,16 @@
 ---
+# - hosts: web
+#   gather_facts: yes
+#   become: false
+#   tasks:
+#   - name: Distribution
+#     debug: msg="{{ ansible_distribution }}"
+#   - name: Distribution version
+#     debug: msg="{{ ansible_distribution_version}}"
+#   - name: Distribution major version
+#     debug: msg="{{ ansible_distribution_major_version }}"
+
+
 - name: Установка mysql
   hosts: mysql
   become: yes
@@ -24,13 +36,25 @@
   - backup-client
 
 - name: Установка backup-server
-  hosts: backup_server
+  hosts: backupserver
   become: yes
   roles:
   - backup-server
 
-- name: Установка ldap
-  hosts: ldap
+# - name: Установка ldap
+#   hosts: web
+#   become: yes
+#   roles:
+#   - ldap
+
+- name: Установка rsyslog
+  hosts: log
   become: yes
   roles:
-  - ldap
+  - log-server
+
+- name: Установка rsyslog
+  hosts: web, mysql, slave, backupserver
+  become: yes
+  roles:
+  - log-client

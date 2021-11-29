@@ -1,5 +1,5 @@
 [Unit]
-Description=Backup etc catalog 
+Description=Backup db catalog 
 
 [Service]
 Type=simple

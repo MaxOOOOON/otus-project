@@ -8,9 +8,10 @@
 # - name : Enable powertools repository
 #   command: yum config-manager --set-enabled powertools
 
-- name : Enable powertools repository
-  command: yum install dnf
-
+- name : DNF
+  yum:
+    name: dnf
+    state: present
 
 - name: Install borgbackup and netcat
   dnf:
@@ -33,18 +34,18 @@
 
 - name: Copy systemd unit
   copy:
-    src: files/backup.sh
+    src: backup.sh
     dest: /opt/backup.sh
     mode: 0744
 
 - name: Copy systemd unit
   copy:
-    src: files/backup-db.service
+    src: backup-db.service
     dest: /usr/lib/systemd/system/
 
 - name: Copy systemd timer
   copy:
-    src: files/backup-db.timer
+    src: backup-db.timer
     dest: /usr/lib/systemd/system/
 
 - name: Enable service

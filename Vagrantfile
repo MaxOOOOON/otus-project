@@ -32,7 +32,7 @@ MACHINES = {
                 ]
 },
 
-    :backup_server => {
+    :backupserver => {
         :box_name => "centos/8",
         :memory => 512,
         :net => [
@@ -40,13 +40,30 @@ MACHINES = {
                 ]
 },
 
-    :ldap => {
+    :log => {
         :box_name => "centos/8",
         :memory => 512,
         :net => [
                 {ip: '192.168.255.6', adapter: 2, netmask: "255.255.255.0", virtualbox__intnet: "local"},
                 ]
 },
+
+    :monitoring => {
+        :box_name => "centos/8",
+        :memory => 1024,
+        :net => [
+                {ip: '192.168.255.7', adapter: 2, netmask: "255.255.255.0", virtualbox__intnet: "local"},
+                ]
+},
+
+
+#     :ldap => {
+#         :box_name => "centos/8",
+#         :memory => 2048,
+#         :net => [
+#                 {ip: '192.168.255.6', adapter: 2, netmask: "255.255.255.0", virtualbox__intnet: "local"},
+#                 ]
+# },
 
 
 }
@@ -64,13 +81,13 @@ Vagrant.configure("2") do |config|
             box.vm.network "private_network", ipconf
             end
             box.vm.provider :virtualbox do |vb|
-                    vb.customize ["modifyvm", :id, "--memory", "512"]
-            end        
-                  
+                vb.customize ["modifyvm", :id, "--memory", boxconfig[:memory]]
+                end
+                          
             case boxname.to_s
             when "web"
-                box.vm.network "forwarded_port", guest: 80, host: 8080
-                box.vm.network "forwarded_port", guest: 8065, host: 8081
+                box.vm.network "forwarded_port", guest: 443, host: 8080
+                # box.vm.network "forwarded_port", guest: 8065, host: 8081
             when "ldap"
                 box.vm.network "forwarded_port", guest: 80, host: 8082
                 box.vm.hostname = "ipa-server.otus.local"
