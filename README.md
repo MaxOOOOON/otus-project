@@ -20,7 +20,7 @@
 
 ### Схема стенда
 
-![]()  
+![](https://github.com/MaxOOOOON/otus-project/blob/main/pictures/project-otus.jpg)  
 
 
 Установка дополнительных коллекций из ansible-galaxy
@@ -41,7 +41,7 @@
 
 ### Интерфейс приложения
 
-![]()  
+![](https://github.com/MaxOOOOON/otus-project/blob/main/pictures/Screenshot_20211130_185753.png)  
 
 
 ## Формирование ролей
@@ -100,11 +100,11 @@ web
 
 Дашборд из графаны
 
-![]()  
+![](https://github.com/MaxOOOOON/otus-project/blob/main/pictures/Screenshot_20211130_185734.png)  
 
 Настроен алертинг в телеграм, при использовании процессора >80%
 
-![]()  
+![](https://github.com/MaxOOOOON/otus-project/blob/main/pictures/Screenshot_20211130_182127.png)  
 
 
 
