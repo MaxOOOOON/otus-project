@@ -1,0 +1,48 @@
+---
+- name: Create prometheus-exporter user
+  user:
+    name: prometheus-exporter
+    create_home: no
+    shell: /bin/false
+
+
+# - name: Remove Node Exporter
+#    file:
+#     path: /usr/local/bin/node_exporter
+#     state: absent
+
+
+- name: Check for Node Exporter binary
+  stat:
+    path: /usr/local/bin/node_exporter
+  register: node_exporter_status
+
+
+- name: Copy installation script
+  template:
+    src: setup.sh.j2
+    dest: /tmp/setup.sh
+    mode: '+x'
+  when: node_exporter_status.stat.exists == False
+  
+
+- name: Install Node Exporter
+  shell: 
+    cmd: /tmp/setup.sh
+    chdir: /tmp
+  when: node_exporter_status.stat.exists == False
+
+  
+- name: Setup Node Exporter service
+  copy:
+    src: node_exporter.service
+    dest: /etc/systemd/system/node_exporter.service
+  notify: Reload systemctl
+  when: node_exporter_status.stat.exists == False
+
+
+- name: Start Node Exporter
+  service:
+    name: node_exporter
+    state: started
+    enabled: yes

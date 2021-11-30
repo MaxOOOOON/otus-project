@@ -1,0 +1,16 @@
+---
+
+- name: Restart Prometheus
+  systemd:
+    name: prometheus
+    state: restarted
+
+
+- name: Reload systemctl
+  systemd:
+    daemon_reload: true
+
+- name: Reload firewalld
+  systemd: 
+    name: firewalld
+    state: reloaded

@@ -1,5 +1,79 @@
 ---
-# - hosts: web
+# - name: Установка mysql
+#   hosts: mysql
+#   become: yes
+#   roles:
+#   - mysql
+
+# - name: Установка mysql-slave
+#   hosts: slave
+#   become: yes
+#   roles:
+#   - mysql-slave
+
+# - name: Установка nginx
+#   hosts: web
+#   become: yes
+#   roles:
+#   - web
+
+# - name: Установка backup-client
+#   hosts: slave
+#   become: yes
+#   roles:
+#   - backup-client
+
+# - name: Установка backup-server
+#   hosts: backupserver
+#   become: yes
+#   roles:
+#   - backup-server
+
+# # - name: Установка ldap
+# #   hosts: web
+# #   become: yes
+# #   roles:
+# #   - ldap
+
+# - name: Установка rsyslog
+#   hosts: log
+#   become: yes
+#   roles:
+#   - log-server
+
+# - name: Установка rsyslog
+#   hosts: web, mysql, slave, backupserver
+#   become: yes
+#   roles:
+#   - log-client
+
+
+- name: Установка prometheus и grafana
+  hosts: monitoring
+  become: yes
+  roles:
+  - monitoring
+
+- name: Установка node exporter
+  hosts: web, mysql, backupserver, log
+  become: yes
+  roles:
+  - monitoring-node
+
+
+- name: Установка router
+  hosts: inetRouter
+  become: yes
+  roles:
+  - router
+
+
+
+
+
+
+
+  # - hosts: web
 #   gather_facts: yes
 #   become: false
 #   tasks:
@@ -9,52 +83,3 @@
 #     debug: msg="{{ ansible_distribution_version}}"
 #   - name: Distribution major version
 #     debug: msg="{{ ansible_distribution_major_version }}"
-
-
-- name: Установка mysql
-  hosts: mysql
-  become: yes
-  roles:
-  - mysql
-
-- name: Установка mysql-slave
-  hosts: slave
-  become: yes
-  roles:
-  - mysql-slave
-
-- name: Установка nginx
-  hosts: web
-  become: yes
-  roles:
-  - web
-
-- name: Установка backup-client
-  hosts: slave
-  become: yes
-  roles:
-  - backup-client
-
-- name: Установка backup-server
-  hosts: backupserver
-  become: yes
-  roles:
-  - backup-server
-
-# - name: Установка ldap
-#   hosts: web
-#   become: yes
-#   roles:
-#   - ldap
-
-- name: Установка rsyslog
-  hosts: log
-  become: yes
-  roles:
-  - log-server
-
-- name: Установка rsyslog
-  hosts: web, mysql, slave, backupserver
-  become: yes
-  roles:
-  - log-client

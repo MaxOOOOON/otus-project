@@ -1,0 +1,32 @@
+---
+- name: Set ip forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    sysctl_set: yes
+    reload: yes
+
+
+- name: Install iptables-services
+  yum:
+    name: iptables-services
+    state: present
+
+
+- name: Start and enable iptables service
+  systemd:
+    name: iptables
+    state: started
+    enabled: yes
+
+
+- name: iptables-save
+  copy:
+    src: iptables-inetRouter
+    dest: /etc/sysconfig/iptables
+  notify: restart iptables
+
+# - name: restart network
+#   systemd:
+#     name: network
+#     state: restarted

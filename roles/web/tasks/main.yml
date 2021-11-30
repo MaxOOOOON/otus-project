@@ -1,6 +1,6 @@
 ---
 - name: Nginx module reset
-  shell: yum module reset nginx
+  shell: yum module reset nginx -y
 
 
 - name: Nginx module enable nginx:1.20
@@ -41,7 +41,7 @@
 
 
 - name: Give insecure permissions to an existing file
-  ansible.builtin.file:
+  file:
     path: /opt/mattermost
     owner: mattermost
     group: mattermost

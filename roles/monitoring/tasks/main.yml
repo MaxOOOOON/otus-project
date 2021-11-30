@@ -1,0 +1,79 @@
+---
+- name: Create prometheus user
+  user:
+    name: prometheus
+    create_home: no
+    shell: /bin/false
+
+
+# - name: Remove Prometheus binary
+#    file:
+#     path: /usr/local/bin/prometheus
+#     state: absent
+
+
+- name: Check for Prometheus binary
+  stat:
+    path: /usr/local/bin/prometheus
+  register: prometheus_status
+
+
+- name: Copy installation script
+  template:
+    src: setup.sh.j2
+    dest: /tmp/setup.sh
+    mode: '+x'
+  when: prometheus_status.stat.exists == False
+  
+  
+- name: Setup Prometheus
+  shell: 
+    cmd: /tmp/setup.sh
+    chdir: /tmp
+  when: prometheus_status.stat.exists == False
+
+
+- name: Setup service
+  copy:
+    src: prometheus.service
+    dest: /etc/systemd/system/prometheus.service
+  notify: Reload systemctl
+  when: prometheus_status.stat.exists == False
+
+
+- name: Copy Prometheus config
+  copy:
+    src: prometheus.yml
+    dest: /etc/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+  notify: Restart Prometheus
+
+
+- name: Start prometheus
+  service:
+    name: prometheus
+    state: started
+    enabled: yes
+
+
+- name: Install Grafana
+  yum:
+    name: grafana
+    state: present
+# name: 'https://dl.grafana.com/oss/release/grafana-{{ grafana_version }}.x86_64.rpm'
+
+
+- name: Start Grafana
+  service:
+    name: grafana-server
+    state: started
+    enabled: yes
+
+
+- name: Allow remote access to Grafana at {{ inventory_hostname }}
+  firewalld:
+    port: 3000/tcp
+    permanent: yes
+    state: enabled
+  notify: Reload firewalld

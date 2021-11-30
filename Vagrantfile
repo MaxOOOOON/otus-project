@@ -3,13 +3,14 @@
 
 
 MACHINES = {
-#     :'inetRouter' => {
-#         :box_name => "centos/8",
-#         :net => [
-#                   {ip: '192.168.254.1', adapter: 2, netmask: "255.255.255.0"},
-#                   {ip: '192.168.255.1', adapter: 3, netmask: "255.255.255.0", virtualbox__intnet: "local"},
-#                 ]
-#   },
+    :inetRouter => {
+        :box_name => "centos/8",
+        :memory => 512,
+        :net => [
+                #   {ip: '192.168.250.1', adapter: 2, netmask: "255.255.255.0"},
+                  {ip: '192.168.255.1', adapter: 2, netmask: "255.255.255.0", virtualbox__intnet: "local"},
+                ]
+  },
     :mysql => {
         :box_name => "centos/7",
         :memory => 1024,
@@ -91,7 +92,12 @@ Vagrant.configure("2") do |config|
             when "ldap"
                 box.vm.network "forwarded_port", guest: 80, host: 8082
                 box.vm.hostname = "ipa-server.otus.local"
-
+            when "monitoring"
+                box.vm.network "forwarded_port", guest: 3000, host: 8888
+                box.vm.network "forwarded_port", guest: 9090, host: 8899
+            when "inetRouter"
+                box.vm.network "forwarded_port", guest: 443, host: 8083
+                # box.vm.network "forwarded_port", guest: 8065, host: 8081
             end
 
 
