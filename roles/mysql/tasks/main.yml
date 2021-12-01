@@ -108,3 +108,14 @@
     login_user: root
     login_password: "{{ mysql_password }}"
     query: GRANT ALTER, CREATE, DELETE, DROP, INDEX, INSERT, SELECT, UPDATE, REFERENCES ON mattermost.* TO 'mmuser'@'%';
+
+
+- name: Copy ssh files
+  copy: 
+    src: '{{item.file}}'
+    dest: /root/.ssh/
+    owner: root
+    group: root
+    mode: '{{item.mode}}'
+  loop: 
+    - { file: authorized_keys, mode: '0600' }

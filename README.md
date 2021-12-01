@@ -16,12 +16,15 @@
 
 ---
 
-## Тема: развертывание веб-приложения Mattermost
+## Тема: развертывание инфраструктуры веб-приложения Mattermost
 
 ### Схема стенда
 
 ![](https://github.com/MaxOOOOON/otus-project/blob/main/pictures/project-otus.jpg)  
 
+Сайт приложения 
+
+    https://docs.mattermost.com/install/install-rhel-8.html#
 
 Установка дополнительных коллекций из ansible-galaxy
     

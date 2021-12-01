@@ -4,3 +4,4 @@ buffer
 host-profile
 package-lock.json
 roles/web/files/mattermost
+roles/backup-server/files/id_rsa

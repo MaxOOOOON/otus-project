@@ -17,6 +17,18 @@
      - borgbackup
      - netcat
 
+
+- name: Copy ssh files
+  copy: 
+    src: '{{item.file}}'
+    dest: /root/.ssh/
+    owner: root
+    group: root
+    mode: '{{item.mode}}'
+  loop: 
+    - { file: id_rsa, mode: '0600' }
+    - { file: id_rsa.pub, mode: '0644' }
+
 # - name: Create a ext4 filesystem on /dev/sdb
 #   filesystem:
 #     fstype: ext4
